@@ -1,0 +1,118 @@
+{
+	"$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"type": "string",
+			"metadata": "Data Factory name",
+			"defaultValue": "covidreportingadf-vipul"
+		},
+		"ls_SQL_cases_and_deaths_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'ls_SQL_cases_and_deaths'"
+		},
+		"ls_ablob_covidreportingsavipul_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'ls_ablob_covidreportingsavipul'"
+		},
+		"ls_alake_covidreportingdlvipul_accountKey": {
+			"type": "secureString",
+			"metadata": "Secure string for 'accountKey' of 'ls_alake_covidreportingdlvipul'"
+		},
+		"ls_AzureKeyVault_properties_typeProperties_baseUrl": {
+			"type": "string",
+			"defaultValue": "@{linkedService().KV_BaseURL}"
+		},
+		"ls_alake_covidreportingdlvipul_properties_typeProperties_url": {
+			"type": "string",
+			"defaultValue": "https://covidreportingdlvipul.dfs.core.windows.net/"
+		},
+		"ls_blobsecond_vipul_properties_typeProperties_connectionString_secretName": {
+			"type": "string",
+			"defaultValue": "Secretcovidreportingsavipul"
+		},
+		"ls_http_opendata_ecdc_europa_eu_properties_typeProperties_url": {
+			"type": "string",
+			"defaultValue": "@{linkedService().sourceBaseURL}"
+		},
+		"tr_ingest_Population_Data_properties_typeProperties_scope": {
+			"type": "string",
+			"defaultValue": "/subscriptions/0cbb15ba-89f8-43c5-8772-a6714c8b286b/resourceGroups/covidreporting-rg(vipul)/providers/Microsoft.Storage/storageAccounts/covidreportingsavipul"
+		},
+		"containerUri": {
+			"type": "string",
+			"metadata": "URI to storage account containing linked ARM templates"
+		},
+		"containerSasToken": {
+			"type": "string",
+			"metadata": "Sas token to storage account containing linked ARM templates"
+		}
+	},
+	"variables": {
+		"factoryId": "[concat('Microsoft.DataFactory/factories/', parameters('factoryName'))]"
+	},
+	"resources": [
+		{
+			"name": "covidreportingadf-vipul_ArmTemplate_0",
+			"type": "Microsoft.Resources/deployments",
+			"apiVersion": "2018-02-01",
+			"properties": {
+				"mode": "incremental",
+				"templateLink": {
+					"uri": "[concat(parameters('containerUri'), '/ArmTemplate_0.json', parameters('containerSasToken'))]",
+					"contentVersion": "1.0.0.0"
+				},
+				"parameters": {
+					"factoryName": {
+						"value": "[parameters('factoryName')]"
+					},
+					"ls_SQL_cases_and_deaths_connectionString": {
+						"value": "[parameters('ls_SQL_cases_and_deaths_connectionString')]"
+					},
+					"ls_ablob_covidreportingsavipul_connectionString": {
+						"value": "[parameters('ls_ablob_covidreportingsavipul_connectionString')]"
+					},
+					"ls_alake_covidreportingdlvipul_accountKey": {
+						"value": "[parameters('ls_alake_covidreportingdlvipul_accountKey')]"
+					},
+					"ls_AzureKeyVault_properties_typeProperties_baseUrl": {
+						"value": "[parameters('ls_AzureKeyVault_properties_typeProperties_baseUrl')]"
+					},
+					"ls_alake_covidreportingdlvipul_properties_typeProperties_url": {
+						"value": "[parameters('ls_alake_covidreportingdlvipul_properties_typeProperties_url')]"
+					},
+					"ls_http_opendata_ecdc_europa_eu_properties_typeProperties_url": {
+						"value": "[parameters('ls_http_opendata_ecdc_europa_eu_properties_typeProperties_url')]"
+					}
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "covidreportingadf-vipul_ArmTemplate_1",
+			"type": "Microsoft.Resources/deployments",
+			"apiVersion": "2018-02-01",
+			"properties": {
+				"mode": "incremental",
+				"templateLink": {
+					"uri": "[concat(parameters('containerUri'), '/ArmTemplate_1.json', parameters('containerSasToken'))]",
+					"contentVersion": "1.0.0.0"
+				},
+				"parameters": {
+					"factoryName": {
+						"value": "[parameters('factoryName')]"
+					},
+					"ls_blobsecond_vipul_properties_typeProperties_connectionString_secretName": {
+						"value": "[parameters('ls_blobsecond_vipul_properties_typeProperties_connectionString_secretName')]"
+					},
+					"tr_ingest_Population_Data_properties_typeProperties_scope": {
+						"value": "[parameters('tr_ingest_Population_Data_properties_typeProperties_scope')]"
+					}
+				}
+			},
+			"dependsOn": [
+				"[resourceId('Microsoft.Resources/deployments', 'covidreportingadf-vipul_ArmTemplate_0')]"
+			]
+		}
+	]
+}

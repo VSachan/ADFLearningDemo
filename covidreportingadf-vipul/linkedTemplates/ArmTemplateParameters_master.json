@@ -1,0 +1,39 @@
+{
+	"$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"value": "covidreportingadf-vipul"
+		},
+		"ls_SQL_cases_and_deaths_connectionString": {
+			"value": ""
+		},
+		"ls_ablob_covidreportingsavipul_connectionString": {
+			"value": ""
+		},
+		"ls_alake_covidreportingdlvipul_accountKey": {
+			"value": ""
+		},
+		"ls_AzureKeyVault_properties_typeProperties_baseUrl": {
+			"value": "@{linkedService().KV_BaseURL}"
+		},
+		"ls_alake_covidreportingdlvipul_properties_typeProperties_url": {
+			"value": "https://covidreportingdlvipul.dfs.core.windows.net/"
+		},
+		"ls_blobsecond_vipul_properties_typeProperties_connectionString_secretName": {
+			"value": "Secretcovidreportingsavipul"
+		},
+		"ls_http_opendata_ecdc_europa_eu_properties_typeProperties_url": {
+			"value": "@{linkedService().sourceBaseURL}"
+		},
+		"tr_ingest_Population_Data_properties_typeProperties_scope": {
+			"value": "/subscriptions/0cbb15ba-89f8-43c5-8772-a6714c8b286b/resourceGroups/covidreporting-rg(vipul)/providers/Microsoft.Storage/storageAccounts/covidreportingsavipul"
+		},
+		"containerUri": {
+			"value": ""
+		},
+		"containerSasToken": {
+			"value": ""
+		}
+	}
+}
