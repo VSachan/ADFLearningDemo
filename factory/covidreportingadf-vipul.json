@@ -1,0 +1,9 @@
+{
+	"name": "covidreportingadf-vipul",
+	"location": "centralindia",
+	"identity": {
+		"type": "SystemAssigned",
+		"principalId": "50846190-cfe2-4e03-8051-e3aacbe9995b",
+		"tenantId": "11873a1f-4c8d-450d-8dfb-e37a2e2557f8"
+	}
+}

@@ -1,0 +1,40 @@
+{
+	"name": "ds_employee",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "ls_blobsecond_vipul",
+			"type": "LinkedServiceReference",
+			"parameters": {
+				"AzureKVBaseURL": "https://keyvaultcovidvipul.vault.azure.net/"
+			}
+		},
+		"annotations": [],
+		"type": "DelimitedText",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobStorageLocation",
+				"fileName": "Employee.txt",
+				"container": "employeescdtype2"
+			},
+			"columnDelimiter": ",",
+			"escapeChar": "\\",
+			"firstRowAsHeader": true,
+			"quoteChar": "\""
+		},
+		"schema": [
+			{
+				"name": "EmpId",
+				"type": "String"
+			},
+			{
+				"name": "Name",
+				"type": "String"
+			},
+			{
+				"name": "City",
+				"type": "String"
+			}
+		]
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

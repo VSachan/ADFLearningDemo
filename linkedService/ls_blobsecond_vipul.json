@@ -1,0 +1,31 @@
+{
+	"name": "ls_blobsecond_vipul",
+	"type": "Microsoft.DataFactory/factories/linkedservices",
+	"properties": {
+		"description": "This blog has been created by vipul to understand the SCD Type 2 in ADF",
+		"parameters": {
+			"AzureKVBaseURL": {
+				"type": "string",
+				"defaultValue": "https://keyvaultcovidvipul.vault.azure.net/"
+			}
+		},
+		"annotations": [],
+		"type": "AzureBlobStorage",
+		"typeProperties": {
+			"connectionString": {
+				"type": "AzureKeyVaultSecret",
+				"store": {
+					"referenceName": "ls_AzureKeyVault",
+					"type": "LinkedServiceReference",
+					"parameters": {
+						"KV_BaseURL": {
+							"value": "@linkedService().AzureKVBaseURL",
+							"type": "Expression"
+						}
+					}
+				},
+				"secretName": "Secretcovidreportingsavipul"
+			}
+		}
+	}
+}

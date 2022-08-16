@@ -1,0 +1,56 @@
+{
+	"name": "ds_AZsql_Employee",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "ls_SQL_cases_and_deaths",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "SurrGateKey",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "Name",
+				"type": "varchar"
+			},
+			{
+				"name": "City",
+				"type": "varchar"
+			},
+			{
+				"name": "IsActive",
+				"type": "bit"
+			},
+			{
+				"name": "FromDate",
+				"type": "datetime",
+				"precision": 23,
+				"scale": 3
+			},
+			{
+				"name": "EndDate",
+				"type": "datetime",
+				"precision": 23,
+				"scale": 3
+			},
+			{
+				"name": "EmpId",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "IsDeleted",
+				"type": "bit"
+			}
+		],
+		"typeProperties": {
+			"schema": "dbo",
+			"table": "employee"
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

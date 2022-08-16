@@ -1,0 +1,245 @@
+{
+	"name": "df_employee_SCDType2",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "ds_employee",
+						"type": "DatasetReference"
+					},
+					"name": "srcEmployee"
+				},
+				{
+					"dataset": {
+						"referenceName": "ds_AZsql_Employee",
+						"type": "DatasetReference"
+					},
+					"name": "SQLEmployee"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "ds_AZsql_Employee",
+						"type": "DatasetReference"
+					},
+					"name": "sinkSQL"
+				},
+				{
+					"dataset": {
+						"referenceName": "ds_AZsql_Employee",
+						"type": "DatasetReference"
+					},
+					"name": "sinkInsertSQL"
+				},
+				{
+					"dataset": {
+						"referenceName": "ds_AZsql_Employee",
+						"type": "DatasetReference"
+					},
+					"name": "sinkExpireOld"
+				}
+			],
+			"transformations": [
+				{
+					"name": "selectSrcColumns"
+				},
+				{
+					"name": "selectSQLColumns"
+				},
+				{
+					"name": "JoinIdentifyDelete"
+				},
+				{
+					"name": "filterToBeDeleted"
+				},
+				{
+					"name": "derivedColumn"
+				},
+				{
+					"name": "AlterRow"
+				},
+				{
+					"name": "lookupIdentifyInsertUpdate"
+				},
+				{
+					"name": "Conditionalsplit"
+				},
+				{
+					"name": "derivedColumn1"
+				},
+				{
+					"name": "ExpireCurrentActive"
+				},
+				{
+					"name": "derivedColumn2"
+				},
+				{
+					"name": "AlterRowUpdateExpire"
+				},
+				{
+					"name": "SkipExistingRecords"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          EmpId as integer,",
+				"          Name as string,",
+				"          City as string",
+				"     ),",
+				"     allowSchemaDrift: false,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> srcEmployee",
+				"source(output(",
+				"          SurrGateKey as integer,",
+				"          Name as string,",
+				"          City as string,",
+				"          IsActive as boolean,",
+				"          FromDate as timestamp,",
+				"          EndDate as timestamp,",
+				"          EmpId as integer,",
+				"          IsDeleted as boolean",
+				"     ),",
+				"     allowSchemaDrift: false,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     format: 'table') ~> SQLEmployee",
+				"srcEmployee select(mapColumn(",
+				"          each(match(true()),",
+				"               'src_'+$$ = $$)",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> selectSrcColumns",
+				"SQLEmployee select(mapColumn(",
+				"          each(match(true()),",
+				"               'sql_'+$$ = $$)",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> selectSQLColumns",
+				"selectSrcColumns, selectSQLColumns join(src_EmpId == sql_EmpId,",
+				"     joinType:'right',",
+				"     matchType:'exact',",
+				"     ignoreSpaces: false,",
+				"     broadcast: 'auto')~> JoinIdentifyDelete",
+				"JoinIdentifyDelete filter(isNull(src_EmpId) && !isNull(sql_EmpId)) ~> filterToBeDeleted",
+				"filterToBeDeleted derive(SrcIsDeleted = 1,",
+				"          SrcEndDate = currentDate()) ~> derivedColumn",
+				"derivedColumn alterRow(updateIf(1==1)) ~> AlterRow",
+				"SkipExistingRecords, selectSQLColumns lookup(src_EmpId == sql_EmpId,",
+				"     multiple: false,",
+				"     pickup: 'any',",
+				"     broadcast: 'auto')~> lookupIdentifyInsertUpdate",
+				"lookupIdentifyInsertUpdate split(!isNull(src_EmpId) && isNull(sql_EmpId),",
+				"     !isNull(src_EmpId) && !isNull(sql_EmpId),",
+				"     disjoint: false) ~> Conditionalsplit@(InsertOperation, UpdateOperation, Other)",
+				"Conditionalsplit@InsertOperation derive(SrcIsActive = 1,",
+				"          SrcIsDeleted = 0,",
+				"          SrcFromDate = currentDate(),",
+				"          SrcEndDate = toDate('9999-01-01', 'yyyy-MM-dd')) ~> derivedColumn1",
+				"Conditionalsplit@UpdateOperation, selectSQLColumns exists((src_EmpId==selectSQLColumns@sql_EmpId) && (src_Name!=selectSQLColumns@sql_Name || src_City!=selectSQLColumns@sql_City) && selectSQLColumns@sql_IsActive==true() && selectSQLColumns@sql_IsDeleted==false(),",
+				"     negate:false,",
+				"     broadcast: 'auto')~> ExpireCurrentActive",
+				"ExpireCurrentActive derive(IsActive = false(),",
+				"          EndDate = currentDate()) ~> derivedColumn2",
+				"derivedColumn2 alterRow(upsertIf(1==1)) ~> AlterRowUpdateExpire",
+				"selectSrcColumns, selectSQLColumns exists((src_EmpId==sql_EmpId) && (src_Name!=sql_Name || src_City!=sql_City) && sql_IsActive==true() && sql_IsDeleted==false(),",
+				"     negate:false,",
+				"     broadcast: 'both')~> SkipExistingRecords",
+				"AlterRow sink(allowSchemaDrift: false,",
+				"     validateSchema: false,",
+				"     input(",
+				"          SurrGateKey as integer,",
+				"          Name as string,",
+				"          City as string,",
+				"          IsActive as boolean,",
+				"          FromDate as timestamp,",
+				"          EndDate as timestamp,",
+				"          EmpId as integer,",
+				"          IsDeleted as boolean",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:false,",
+				"     updateable:true,",
+				"     upsertable:false,",
+				"     keys:['SurrGateKey'],",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     saveOrder: 1,",
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     mapColumn(",
+				"          SurrGateKey = sql_SurrGateKey,",
+				"          Name = sql_Name,",
+				"          City = sql_City,",
+				"          IsActive = sql_IsActive,",
+				"          FromDate = sql_FromDate,",
+				"          EndDate = SrcEndDate,",
+				"          EmpId = sql_EmpId,",
+				"          IsDeleted = SrcIsDeleted",
+				"     )) ~> sinkSQL",
+				"derivedColumn1 sink(allowSchemaDrift: false,",
+				"     validateSchema: false,",
+				"     input(",
+				"          SurrGateKey as integer,",
+				"          Name as string,",
+				"          City as string,",
+				"          IsActive as boolean,",
+				"          FromDate as timestamp,",
+				"          EndDate as timestamp,",
+				"          EmpId as integer,",
+				"          IsDeleted as boolean",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     mapColumn(",
+				"          Name = src_Name,",
+				"          City = src_City,",
+				"          IsActive = SrcIsActive,",
+				"          FromDate = SrcFromDate,",
+				"          EndDate = SrcEndDate,",
+				"          EmpId = src_EmpId,",
+				"          IsDeleted = SrcIsDeleted",
+				"     )) ~> sinkInsertSQL",
+				"AlterRowUpdateExpire sink(allowSchemaDrift: false,",
+				"     validateSchema: false,",
+				"     input(",
+				"          SurrGateKey as integer,",
+				"          Name as string,",
+				"          City as string,",
+				"          IsActive as boolean,",
+				"          FromDate as timestamp,",
+				"          EndDate as timestamp,",
+				"          EmpId as integer,",
+				"          IsDeleted as boolean",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:false,",
+				"     updateable:true,",
+				"     upsertable:false,",
+				"     keys:['SurrGateKey'],",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     mapColumn(",
+				"          Name = sql_Name,",
+				"          City = sql_City,",
+				"          IsActive,",
+				"          FromDate = sql_FromDate,",
+				"          EndDate,",
+				"          EmpId = sql_EmpId,",
+				"          IsDeleted = sql_IsDeleted,",
+				"          SurrGateKey = sql_SurrGateKey",
+				"     )) ~> sinkExpireOld"
+			]
+		}
+	}
+}
