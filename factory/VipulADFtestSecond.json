@@ -1,0 +1,9 @@
+{
+	"name": "VipulADFtestSecond",
+	"location": "eastus",
+	"identity": {
+		"type": "SystemAssigned",
+		"principalId": "99b5d5c0-0b36-4b17-96ce-277cd87ea82e",
+		"tenantId": "11873a1f-4c8d-450d-8dfb-e37a2e2557f8"
+	}
+}
